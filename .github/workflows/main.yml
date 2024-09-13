@@ -1,9 +1,7 @@
 name: Figma Migration Workflow
 
+# Esto permite ejecutar el workflow de forma manual desde la pestaña de Actions
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       figma_document_id:
@@ -16,25 +14,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the code
+    - name: Checkout the repository
       uses: actions/checkout@v3
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20'   # Actualiza a Node.js 20
+        node-version: '20'
 
-
-    - name: Migrate Figma components
+    - name: Fetch Figma Document
       env:
         FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
         FIGMA_DOCUMENT_ID: ${{ github.event.inputs.figma_document_id }}
       run: |
+        echo "Fetching Figma document with ID: ${FIGMA_DOCUMENT_ID}"
         curl -X GET "https://api.figma.com/v1/files/${FIGMA_DOCUMENT_ID}" \
         -H "X-Figma-Token: ${FIGMA_TOKEN}" \
         -o figma_components.json
+        echo "Figma document fetched and saved as figma_components.json"
 
     - name: Process Figma JSON
       run: |
-        echo "Processing Figma JSON"
-        # Aquí agregas cualquier script que procese el archivo figma_components.json
+        echo "Processing Figma JSON data..."
+        cat figma_components.json
+        # Aquí puedes agregar scripts adicionales para procesar los datos de Figma
+
+    - name: Commit Figma JSON to repository
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add figma_components.json
+        git commit -m "Update Figma components from document ${FIGMA_DOCUMENT_ID}"
+        git push
