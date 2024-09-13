@@ -24,8 +24,6 @@ jobs:
       with:
         node-version: '20'   # Actualiza a Node.js 20
 
-    - name: Install dependencies
-      run: npm install
 
     - name: Migrate Figma components
       env:
