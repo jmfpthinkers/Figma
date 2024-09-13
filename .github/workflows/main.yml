@@ -1,0 +1,42 @@
+name: Figma Migration Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      figma_document_id:
+        description: 'ID del documento de Figma'
+        required: true
+        default: ''
+
+jobs:
+  figma-migration:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Migrate Figma components
+      env:
+        FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        FIGMA_DOCUMENT_ID: ${{ github.event.inputs.figma_document_id }}
+      run: |
+        curl -X GET "https://api.figma.com/v1/files/${FIGMA_DOCUMENT_ID}" \
+        -H "X-Figma-Token: ${FIGMA_TOKEN}" \
+        -o figma_components.json
+
+    - name: Process Figma JSON
+      run: |
+        echo "Processing Figma JSON"
+        # Aquí agregas cualquier script que procese el archivo figma_components.json
